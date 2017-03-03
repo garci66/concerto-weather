@@ -25,6 +25,10 @@ module ConcertoWeather
           "#{ stylesheet_link_tag 'concerto_weather/application' }"
         end
 
+        add_controller_hook "ContentsController", :update_params, :after do
+          @attributes.concat([:config => [:units, :font_name, :format_string, :forecast_type]])
+        end
+
       end
     end
   end
