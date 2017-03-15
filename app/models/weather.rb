@@ -35,14 +35,12 @@ class Weather < DynamicContent
                 height: 100%
             }
         </style>
-        <script type="text/javascript" src="http://www.aa2000.com.ar/js/list.min.js"></script>
-<script type="text/javascript">
+<script type='text/javascript' src='http://www.aa2000.com.ar/js/list.min.js'></script>
+<script type='text/javascript'>
     $(document).ready(function () {
         organizaGrillaVuelos();
     })
     function organizaGrillaVuelos() {
-        idioma = $('[id*="lblIdiomaForPopUp"]').text();
-
         /* obtener hora del server */
         function getDate(offset) {
             var now = new Date();
@@ -63,10 +61,10 @@ class Weather < DynamicContent
 
 //            if ($(window).width() > 768) {
                 var positionNow = nowTimeCalc.offset().top - $('.listArribos').offset().top;
-                $('.listArribos').animate({ scrollTop: positionNow }, "slow");
+                $('.listArribos').animate({ scrollTop: positionNow }, 'slow');
 //            } else {
 //                var positionNow = nowTimeCalc.offset().top - $('#grillaVuelos').offset().top;
-//                $('body').animate({ scrollTop: positionNow }, "slow");
+//                $('body').animate({ scrollTop: positionNow }, 'slow');
 //            }
 
         }
@@ -81,16 +79,17 @@ class Weather < DynamicContent
                 }
 //                if ($(window).width() > 768) {
                     var positionNow = nowTimeCalc.offset().top - $('.listPartidas').offset().top;
-                    $('.listPartidas').animate({ scrollTop: positionNow }, "slow");
+                    $('.listPartidas').animate({ scrollTop: positionNow }, 'slow');
 //                } else {
 //                    var positionNow = nowTimeCalc.offset().top - $('#grillaVuelos').offset().top;
-//                    $('body').animate({ scrollTop: positionNow }, "slow");
+//                    $('body').animate({ scrollTop: positionNow }, 'slow');
 //                }
             }
         }
     }
 
 </script>
+
         </head>
         <body id='intro' class='intro-aep'>
           <div class='vuelos-tabla' id='vuelos-tabla'>
