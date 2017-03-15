@@ -20,7 +20,7 @@ class Weather < DynamicContent
 
   def build_content
     require 'net/http'
-    require 'nokigiri'
+    require 'nokogiri'
     require 'base64'
 
     container="<head id='Head1'><meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
