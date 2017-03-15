@@ -24,7 +24,7 @@ class Weather < DynamicContent
     require 'base64'
     require 'json'
 
-    container="<head id='Head1'><meta diego='utf89'/><meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    container="<head id='Head1'><meta diego='utf891'/><meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
         <meta name='viewport' content='width=device-width, user-scalable=yes' />
         <link rel='stylesheet' type='text/css' href='http://www.aa2000.com.ar/stylesheets/screen.min.css' />
         <link rel='stylesheet' type='text/css' href='http://www.aa2000.com.ar/stylesheets/menu-fullscreen.min.css' />
@@ -50,7 +50,7 @@ class Weather < DynamicContent
     uri= URI.parse('http://www.aa2000.com.ar/ezeiza')
 
     http = Net::HTTP.new(uri.host, uri.port)
-    req = Net::HTTP::Post.new(uri.path, initheader = {'X-MicrosoftAjax' => 'Delta=true', 'User-Agent' => 'Mozilla/5.0'})
+    req = Net::HTTP::Post.new(uri.path, initheader = {'X-MicrosoftAjax' => 'Delta=true', 'User-Agent' => 'Mozilla/5.0', 'Cookie' => 'Idioma=EN-US'})
 
     #if self.config[':flight_type'] == 'a'
     #  req.set_form_data( {'__EVENTTARGET' => 'CargarGrillaTimer'} )
