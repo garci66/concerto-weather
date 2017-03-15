@@ -35,11 +35,68 @@ class Weather < DynamicContent
                 height: 100%
             }
         </style>
+        <script type="text/javascript" src="http://www.aa2000.com.ar/js/list.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        organizaGrillaVuelos();
+    })
+    function organizaGrillaVuelos() {
+        idioma = $('[id*="lblIdiomaForPopUp"]').text();
+
+        /* obtener hora del server */
+        function getDate(offset) {
+            var now = new Date();
+            var hour = 60 * 60 * 1000;
+            var min = 60 * 1000;
+            return new Date(now.getTime() + (now.getTimezoneOffset() * min) + (offset * hour));
+        }
+        var dateCET = getDate(-3);
+        nowTime = dateCET.getHours();
+
+        if ($('#arribos table.scrollvuelos-main').find('tbody').find('tr.popup').length > 10) {
+            /* scroll */
+            var nowTimeCalc = $('.listArribos .popup td.hora.stda:contains(' + nowTime + ':)');
+            while (nowTimeCalc.length < 1) {
+                nowTime = nowTime + 1;
+                var nowTimeCalc = $('.listArribos .popup td.hora.stda:contains(' + nowTime + ':)');
+            }
+
+//            if ($(window).width() > 768) {
+                var positionNow = nowTimeCalc.offset().top - $('.listArribos').offset().top;
+                $('.listArribos').animate({ scrollTop: positionNow }, "slow");
+//            } else {
+//                var positionNow = nowTimeCalc.offset().top - $('#grillaVuelos').offset().top;
+//                $('body').animate({ scrollTop: positionNow }, "slow");
+//            }
+
+        }
+
+        if ($('#partidas table.scrollvuelos-main').find('tbody').find('tr.popup').length > 10) {
+            /* scroll */
+            if ($('#divPartidas.tab-active').length > 0) {
+                var nowTimeCalc = $('.listPartidas .popup td.hora.stda:contains(' + nowTime + ':)');
+                while (nowTimeCalc.length < 1) {
+                    nowTime = nowTime + 1;
+                    var nowTimeCalc = $('.listPartidas .popup td.hora.stda:contains(' + nowTime + ':)');
+                }
+//                if ($(window).width() > 768) {
+                    var positionNow = nowTimeCalc.offset().top - $('.listPartidas').offset().top;
+                    $('.listPartidas').animate({ scrollTop: positionNow }, "slow");
+//                } else {
+//                    var positionNow = nowTimeCalc.offset().top - $('#grillaVuelos').offset().top;
+//                    $('body').animate({ scrollTop: positionNow }, "slow");
+//                }
+            }
+        }
+    }
+
+</script>
         </head>
         <body id='intro' class='intro-aep'>
           <div class='vuelos-tabla' id='vuelos-tabla'>
           </div>
         </div>
+
         </body>
     </html>"
     
