@@ -19,127 +19,62 @@ class Weather < DynamicContent
   validate :validate_config
 
   def build_content
-    require 'json'
     require 'net/http'
+    require 'nokigiri'
+    require 'base64'
 
-    forecast_type = self.config['forecast_type']
-    font_name = self.config['font_name']
+    container="<head id='Head1'><meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+        <meta name='viewport' content='width=device-width, user-scalable=yes' />
+        <link rel='stylesheet' type='text/css' href='http://www.aa2000.com.ar/stylesheets/screen.min.css' />
+        <link rel='stylesheet' type='text/css' href='http://www.aa2000.com.ar/stylesheets/menu-fullscreen.min.css' />
+        <link rel='stylesheet' type='text/css' href='http://www.aa2000.com.ar/stylesheets/aeropuerto.min.css' />
+        <style>
+            .vuelos-tabla table.scrollvuelos-main tbody.minitable {
+                display: block;
+                height: 100%
+            }
+        </style>
+        </head>
+        <body id='intro' class='intro-aep'>
+          <div class='vuelos-tabla' id='vuelos-tabla'>
+          </div>
+        </div>
+        </body>
+    </html>"
+    
+    #uri= URI.parse('http://www.aa2000.com.ar/' + self.config['airport'])
+    uri= URI.parse('http://www.aa2000.com.ar/ezeiza')
 
-    if forecast_type == 'forecast'
-       # Full day forecast
-       # Build request url
-       params = {
-          lat: self.config['lat'],
-          lon: self.config['lng'],
-          units: self.config['units'],
-          cnt: 1,
-          mode: 'json',
-          appid: ConcertoConfig['open_weather_map_api_key']
-       }
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Post.new(uri.path, initheader = {'X-MicrosoftAjax' => 'Delta=true', 'User-Agent' => 'Mozilla/5.0'})
 
-       url = "http://api.openweathermap.org/data/2.5/forecast/daily?#{params.to_query}"
+    #if self.config[':flight_type'] == 'a'
+    #  req.set_form_data( {'__EVENTTARGET' => 'CargarGrillaTimer'} )
+    #  flightsDivId='#arribos'
+    #else
+      req.set_form_data( {'__EVENTTARGET' => 'CargarGrillaTimer', 'chkDivPartidas' => 'true'} )
+      flightsDivId='#partidas'
+    #end
 
-       # Make request to OpenWeatherMapAPI
-       response = Net::HTTP.get_response(URI.parse(url)).body
-       data = JSON.parse(response)
+    res=http.request(req)
+    body=res.body.split('|')[7]
+    body.gsub!(/\r/, " ").gsub!(/>\s*</, "><")
+    parsedBody=Nokogiri::HTML::fragment(body)
 
-       # if there was an error, then return nil
-       if data['cod'].present? && !data['cod'].to_s.starts_with?('2')
-         Rails.logger.error("response (#{url}) =  #{response}")
-         return nil
-       end
+    containerNoko=Nokogiri::HTML(container)
+    containerNoko.at('#vuelos-tabla').add_child(parsedBody.css(flightsDivId))
 
-       # Build HTML using API data
+    Base64.strict_encode64(containerNoko.to_s)
 
-       self.config["location_name"] = data["city"]["name"]
 
-       format_city = data['city']['name']
-       format_iconid = "#{data['list'][0]['weather'][0]['id']}"
 
-       if font_name=='wi'
-          format_icon = "<i style=\'font-size:calc(min(80vh,80vw));' class=\'wi wi-owm-#{format_iconid}\'></i>"
-       else
-          format_icon = "<i class=\'owf owf-#{format_iconid} owf-5x\'></i>"
-       end
-
-       format_high = "#{data['list'][0]['temp']['max'].round(0)} &deg;#{UNITS[params[:units]][0]}"
-       format_low = "#{data['list'][0]['temp']['min'].round(0)} &deg;#{UNITS[params[:units]][0]}"
-       empty_html = "
-                <h1> Today in #{format_city} </h1>
-                <div style='float: left; width: 50%'>
-                   #{format_icon}
-                </div>
-                <div style='float: left; width: 50%'>
-                  <p> High </p>
-                  <h1> #{format_high} </h1>
-                  <p> Low </p>
-                  <h1> #{format_low}</h1>
-                </div>
-              "
-    else
-       # We're using realtime weather forecast
-       # Build request url
-       params = {
-          lat: self.config['lat'],
-          lon: self.config['lng'],
-          units: self.config['units'],
-          mode: 'json',
-          appid: ConcertoConfig['open_weather_map_api_key']
-       }
-
-       url = "http://api.openweathermap.org/data/2.5/weather?#{params.to_query}"
-
-       # Make request to OpenWeatherMapAPI
-       response = Net::HTTP.get_response(URI.parse(url)).body
-       data = JSON.parse(response)
-
-       # if there was an error, then return nil
-       if data['cod'].present? && !data['cod'].to_s.starts_with?('2')
-         Rails.logger.error("response (#{url}) =  #{response}")
-         return nil
-       end
-
-       # Build HTML using API data
-
-       self.config["location_name"] = data["name"]
-
-       format_city = data['name']
-       format_iconid = "#{data['weather'][0]['id']}"
-
-       if font_name=='wi'
-          format_icon = "<i style=\'font-size:calc(min(80vh,80vw));' class=\'wi wi-owm-#{format_iconid}\'></i>"
-       else
-          format_icon = "<i class=\'owf owf-#{format_iconid} owf-5x\'></i>"
-       end
-
-       format_high = "#{data['main']['temp_max'].round(0)} &deg;#{UNITS[params[:units]][0]}"
-       format_low = "#{data['main']['temp_min'].round(0)} &deg;#{UNITS[params[:units]][0]}"
-       format_current = "#{data['main']['temp'].round(0)} &deg;#{UNITS[params[:units]][0]}"
-       empty_html = "
-                <h1> Today in #{format_city} </h1>
-                <div style='float: left; width: 50%'>
-                   #{format_icon}
-                </div>
-                <div style='float: left; width: 50%'>
-                  <p> Current </p>
-                  <h1> #{format_current} </h1>
-                </div>
-              "
-    end
-
-    format_string = self.config['format_string']
-
-    if format_string.blank?
-       rawhtml = empty_html
-    else
-       rawhtml = eval("\"" + format_string + "\"")
-    end
 
     # Create HtmlText content
-    htmltext = HtmlText.new()
-    htmltext.name = "Today's weather in #{format_city}"
-    htmltext.data = rawhtml
-    return [htmltext]
+    iframe = Iframe.new()
+    iframe.name = "Vuelos ezeiza}"
+    iframe.url = "data:text/html;base64, " + Base64.strict_encode64(containerNoko.to_s)
+
+    return [iframe]
   end
 
   # Weather needs a location.  Also allow specification of units
