@@ -22,8 +22,9 @@ class Weather < DynamicContent
     require 'net/http'
     require 'nokogiri'
     require 'base64'
+    require 'json'
 
-    container="<head id='Head1'><meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    container="<head id='Head1'><meta diego='utf89'/><meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
         <meta name='viewport' content='width=device-width, user-scalable=yes' />
         <link rel='stylesheet' type='text/css' href='http://www.aa2000.com.ar/stylesheets/screen.min.css' />
         <link rel='stylesheet' type='text/css' href='http://www.aa2000.com.ar/stylesheets/menu-fullscreen.min.css' />
@@ -42,6 +43,9 @@ class Weather < DynamicContent
         </body>
     </html>"
     
+    puts "------------------------------container--------------------------------------"
+    puts container.encoding
+
     #uri= URI.parse('http://www.aa2000.com.ar/' + self.config['airport'])
     uri= URI.parse('http://www.aa2000.com.ar/ezeiza')
 
@@ -57,22 +61,30 @@ class Weather < DynamicContent
     #end
 
     res=http.request(req)
+    puts "---------------------res-------------------" + res['content-type']
+    res.body.force_encoding('utf-8')
+    puts "----body---- " 
+    puts res.body.encoding
     body=res.body.split('|')[7]
     body.gsub!(/\r/, " ").gsub!(/>\s*</, "><")
+    puts "---------------------body-------------------" 
+    puts  body.encoding
+
     parsedBody=Nokogiri::HTML::fragment(body)
 
-    containerNoko=Nokogiri::HTML(container)
+    containerNoko=Nokogiri::HTML(container.encode('utf-8'))
     containerNoko.at('#vuelos-tabla').add_child(parsedBody.css(flightsDivId))
 
-    Base64.strict_encode64(containerNoko.to_s)
 
-
+    html=containerNoko.to_s
+    puts "----------------html-------------"
+    puts html.encoding
 
 
     # Create HtmlText content
     iframe = Iframe.new()
     iframe.name = "Vuelos ezeiza}"
-    iframe.url = "data:text/html;base64, " + Base64.strict_encode64(containerNoko.to_s)
+    iframe.data = JSON.dump( 'url' => "data:text/html;charset=utf-8;base64, " + Base64.strict_encode64(html))
 
     return [iframe]
   end
